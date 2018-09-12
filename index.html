@@ -1,3 +1,34 @@
-<a href="impact/index.html">impact</a></br>
-<a href="modular_multiplication/index.html">modular multiplication</a></br>
-<a href="snowboarding/index.html">snowboarding</a></br>
+<meta charset="UTF-8">
+<html>
+	<head>
+		<script>
+			function add_link(name, url){
+				elem = document.createElement("div");
+				elem.setAttribute("style", "margin: 1em; display:flex;" +
+					"flex-direction: column; align-items: center");
+				img_link = document.createElement("a");
+				img_link.setAttribute("href", url);
+				img = document.createElement("img");
+				img.setAttribute("src", "https://upload.wikimedia.org/wikipedia/commons/c/cc/Gnome-application-x-executable.svg");
+				img.setAttribute("style", "width: 4em; height: 4em");
+				img_link.appendChild(img);
+				elem.appendChild(img_link);
+				label = document.createElement("a");
+				label.setAttribute("href", url);
+				label.setAttribute("style", "text-align: center;" +
+					"max-width: 7em; color: #e6e6e6; text-decoration: none;" +
+					"font-family: sans");
+				label.innerHTML = name;
+				elem.appendChild(label);
+				document.body.appendChild(elem);
+			}
+			window.onload = function(){
+				add_link("impact", "impact/index.html");
+				add_link("modular multiplication", "modular_multiplication/index.html");
+				add_link("snowboarding", "snowboarding/index.html");
+			}
+		</script>
+	</head>
+	<body style="display:flex; flex-flow: row wrap; background-color: #525252">
+	</body>
+</html>
