@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>webgl triangle</title>
+		<style>
+			html, body, canvas {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				display: block;
+			}
+		</style>
+		<script>
+			var gl;
+			function shader_create(vert_src_id, frag_src_id){
+				var shader = {};
+				vert_src = document.getElementById(vert_src_id);
+				if(!vert_src){
+					console.log("could not find vertex shader source with id \"" +
+						vert_src_id + "\"");
+					return null;
+				}
+				shader.vertex_shader = gl.createShader(gl.VERTEX_SHADER);
+				gl.shaderSource(shader.vertex_shader, vert_src.text);
+				gl.compileShader(shader.vertex_shader);
+				if(!gl.getShaderParameter(shader.vertex_shader, gl.COMPILE_STATUS)){
+					console.log("could not compile vertex shader \"" +
+						vert_src_id + "\":\n" +
+						gl.getShaderInfoLog(shader.vertex_shader));
+					gl.deleteShader(shader.vertex_shader);
+					return null;
+				}
+				frag_src = document.getElementById(frag_src_id);
+				if(!frag_src){
+					console.log("could not find fragment shader source with id \"" +
+						frag_src_id + "\"");
+					return null;
+				}
+				shader.fragment_shader = gl.createShader(gl.FRAGMENT_SHADER);
+				gl.shaderSource(shader.fragment_shader, frag_src.text);
+				gl.compileShader(shader.fragment_shader);
+				if(!gl.getShaderParameter(shader.fragment_shader, gl.COMPILE_STATUS)){
+					console.log("could not compile fragment shader \"" +
+						frag_src_id + "\":\n" +
+						gl.getShaderInfoLog(shader.fragment_shader));
+					gl.deleteShader(shader.fragment_shader);
+					gl.deleteShader(shader.vertex_shader);
+					return null;
+				}
+				shader.program = gl.createProgram();
+				gl.attachShader(shader.program, shader.vertex_shader);
+				gl.attachShader(shader.program, shader.fragment_shader);
+				gl.linkProgram(shader.program);
+				if(!gl.getProgramParameter(shader.program, gl.LINK_STATUS)){
+					console.log("could not link shaders \"" +
+						vert_src_id + "\" and \"" + frag_src_id + "\":\n" +
+						gl.getProgramInfoLog(shader.program));
+					shader_destroy(shader);
+					return null;
+				}
+				return shader;
+			}
+			function shader_destroy(shader)
+			{
+				gl.detachShader(shader.program, shader.fragment_shader);
+				gl.detachShader(shader.program, shader.vertex_shader);
+				gl.deleteProgram(shader.program);
+				gl.deleteShader(shader.fragment_shader);
+				gl.deleteShader(shader.vertex_shader);
+			}
+			window.onload = function(){
+				canvas = document.getElementsByTagName("canvas")[0];
+				gl = canvas.getContext("webgl");
+				if(!gl){
+					console.log("could not initialize webgl");
+					return;
+				}
+				shader = shader_create("vert_shader", "frag_shader");
+				pos_attr = gl.getAttribLocation(shader.program, "position_in");
+				mvp_loc = gl.getUniformLocation(shader.program, "mvp");
+				buffer = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+				pos = [
+					0.5, -0.5,
+					-0.5, -0.5,
+					0, 0.5,
+					];
+				gl.bufferData(gl.ARRAY_BUFFER,
+					new Float32Array(pos), gl.STATIC_DRAW);
+				gl.clearColor(0, 0, 0.4, 1);
+				gl.clearDepth(1);
+				gl.enable(gl.DEPTH_TEST);
+				gl.depthFunc(gl.LEQUAL);
+				gl.canvas.width = gl.canvas.clientWidth;
+				gl.canvas.height = gl.canvas.clientHeight;
+				gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+				gl.clear(gl.COLOR_BUFFER_BIT);
+				mvp = [
+					1, 0, 0, 0,
+					0, 1, 0, 0,
+					0, 0, 1, 0,
+					0, 0, 0, 1,
+					];
+				gl.vertexAttribPointer(pos_attr, 2, gl.FLOAT, false, 0, 0);
+				gl.enableVertexAttribArray(pos_attr);
+				gl.useProgram(shader.program);
+				gl.uniformMatrix4fv(mvp_loc, false, new Float32Array(mvp));
+				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
+			}
+		</script>
+		<script id="vert_shader" type="text">
+			attribute vec4 position_in;
+			uniform mat4 mvp;
+			void main() {
+				gl_Position = mvp * position_in;
+			}
+		</script>
+		<script id="frag_shader" type="text">
+			void main() {
+				gl_FragColor = vec4(0.7, 0.7, 0.7, 1.0);
+			}
+		</script>
+	</head>
+	<body>
+		<canvas></canvas>
+	</body>
+</html>
